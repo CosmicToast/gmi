@@ -98,8 +98,11 @@ func parseLink(l string) Line {
 }
 
 func parseHeading(l string) Line {
-	// FIXME: what if the entire text is `#A`?
-	level := strings.Count(l[:3], "#")
+	s := len(l)
+	if len(l) > 3 {
+		s = 3
+	}
+	level := strings.Count(l[:s], "#")
 	l = l[level:]
 	l = strings.TrimSpace(l)
 	return &HeadingLine{l, level}

@@ -11,6 +11,7 @@ import (
 type Parser struct {
 	s     *bufio.Scanner
 	Lines []Line
+	toc   []*HeadingLine
 	pft   bool
 }
 
@@ -114,4 +115,23 @@ func parseQuote(l string) Line {
 	l = strings.TrimPrefix(l, ">")
 	l = strings.TrimSpace(l)
 	return (*QuoteLine)(&l)
+}
+
+// TOC returns the calculated Table of Contents
+// The returned structure is the list of just the headings of the parsed output.
+// Force forces the recalculation of the TOC if it was already calculated, in case you changed the underlying structure.
+func (p *Parser) TOC(force bool) []Line {
+	if p.toc == nil || force {
+		p.calcTOC()
+	}
+	return p.toc
+}
+
+func (p *Parser) calcTOC() {
+	p.toc = nil // in case of force
+	for _, v := range p.Lines {
+		if v.Type() == HeadingType {
+			p.toc = append(p.toc, v)
+		}
+	}
 }

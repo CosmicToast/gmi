@@ -8,14 +8,11 @@ import (
 	"toast.cafe/x/gmi"
 )
 
-func Print(p *gmi.Parser, o io.Writer) error {
-	e := p.Parse() // you know, just in case it wasn't already called
-	if e != nil {
-		return e
-	}
+// Print will write an AST debug format to the given output writer
+func Print(p *gmi.Parser, o io.Writer) {
 	w := bufio.NewWriter(o)
+	var pft bool
 	for _, v := range p.Lines {
-		var pft bool
 		switch v.Type() {
 		case gmi.TextType:
 			fmt.Fprintf(w, "TEXT: %s\n", v)
@@ -40,10 +37,15 @@ func Print(p *gmi.Parser, o io.Writer) error {
 		}
 	}
 	w.Flush()
-	return nil
 }
 
+// PrintReader will use the reader to parse the document and then invoke Print on the resulting AST
 func PrintReader(r io.Reader, o io.Writer) error {
 	p := gmi.NewParser(r)
-	return Print(p, o)
+	e := p.Parse()
+	if e != nil {
+		return e
+	}
+	Print(p, o)
+	return nil
 }

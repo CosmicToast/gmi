@@ -17,7 +17,7 @@ type Parser struct {
 
 // NewParser instantiates a new parser from a reader
 func NewParser(r io.Reader) *Parser {
-	return &Parser{bufio.NewScanner(r), nil, false}
+	return &Parser{bufio.NewScanner(r), nil, nil, false}
 }
 
 // Parse will parse the provided input until termination
@@ -120,7 +120,7 @@ func parseQuote(l string) Line {
 // TOC returns the calculated Table of Contents
 // The returned structure is the list of just the headings of the parsed output.
 // Force forces the recalculation of the TOC if it was already calculated, in case you changed the underlying structure.
-func (p *Parser) TOC(force bool) []Line {
+func (p *Parser) TOC(force bool) []*HeadingLine {
 	if p.toc == nil || force {
 		p.calcTOC()
 	}
@@ -131,7 +131,7 @@ func (p *Parser) calcTOC() {
 	p.toc = nil // in case of force
 	for _, v := range p.Lines {
 		if v.Type() == HeadingType {
-			p.toc = append(p.toc, v)
+			p.toc = append(p.toc, v.(*HeadingLine))
 		}
 	}
 }

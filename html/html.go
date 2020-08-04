@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"strings"
 
 	"toast.cafe/x/gmi"
 )
@@ -15,11 +16,23 @@ func Contents(p *gmi.Parser, o io.Writer) {
 	w := bufio.NewWriter(o)
 	var pft bool
 	var list bool
+	var br int
 	for _, v := range p.Lines {
-		if list && v.Type() != UnorderedListType {
+		// terminating lists
+		if list && v.Type() != gmi.UnorderedListType {
 			fmt.Fprint(w, "</ul>\n")
 			list = false
 		}
+		// <br> handling
+		if v.Type() == gmi.TextType && v.String() == "" {
+			br++
+			continue
+		}
+		if br > 0 {
+			fmt.Fprint(w, strings.Repeat("<br>\n", br-1))
+			br = 0
+		}
+		// normal handling
 		switch v.Type() {
 		case gmi.TextType:
 			fmt.Fprintf(w, "<p>%s</p>\n", v)
@@ -28,7 +41,7 @@ func Contents(p *gmi.Parser, o io.Writer) {
 			if n == "" {
 				n = v.Link()
 			}
-			fmt.Fprintf(w, "<a href='%s'>%s</a>\n", v.Link, n)
+			fmt.Fprintf(w, "<a href='%s'>%s</a>\n", v.Link(), n)
 		case gmi.PreformatToggleType:
 			if pft {
 				fmt.Fprint(w, "</pre>\n")
@@ -39,7 +52,7 @@ func Contents(p *gmi.Parser, o io.Writer) {
 		case gmi.PreformatType:
 			fmt.Fprintln(w, v)
 		case gmi.HeadingType:
-			fmt.Fprintf(w, "<a href='%s'><h%d>%s</h%[2]d></a>\n", url.QueryEscape(v), v.Level(), v)
+			fmt.Fprintf(w, "<a href='%s'><h%d>%s</h%[2]d></a>\n", url.QueryEscape(v.String()), v.Level(), v)
 		case gmi.UnorderedListType:
 			if !list {
 				fmt.Fprint(w, "<ul>\n")

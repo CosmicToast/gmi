@@ -20,7 +20,7 @@ var s struct {
 }
 
 func main() {
-	flag.StringVar(&s.mode, "m", "pretty", "output mode (pretty|debug|html)")
+	flag.StringVar(&s.mode, "m", "pretty", "output mode (pretty|debug)")
 	flag.StringVar(&s.output, "o", "", "output file (default: stdout)")
 	flag.Parse()
 	s.input = flag.Arg(0)
@@ -48,9 +48,6 @@ func main() {
 		log.Fatalf("mode %s is not yet implemented", s.mode)
 	case "debug":
 		dprint.PrintReader(s.in, s.out)
-	case "html":
-		// TODO: also handle TOC, header, footer, etc in settings
-		html.ContentsReader(s.in, s.out)
 	default:
 		log.Fatalf("Unknown mode: %s", s.mode)
 	}

@@ -24,7 +24,7 @@ func Contents(p *gmi.Parser, o io.Writer) {
 			list = false
 		}
 		// <br> handling
-		if v.Type() == gmi.TextType && v.String() == "" {
+		if v.Type() == gmi.TextType && v.Data() == "" {
 			br++
 			continue
 		}
@@ -35,14 +35,15 @@ func Contents(p *gmi.Parser, o io.Writer) {
 		// normal handling
 		switch v.Type() {
 		case gmi.TextType:
-			fmt.Fprintf(w, "<p>%s</p>\n", v)
+			fmt.Fprintf(w, "<p>%s</p>\n", v.Data())
 		case gmi.LinkType:
-			n := v.String()
+			n := v.Meta()
 			if n == "" {
-				n = v.Link()
+				n = v.Data()
 			}
-			fmt.Fprintf(w, "<a href='%s'>%s</a>\n", v.Link(), n)
+			fmt.Fprintf(w, "<a href='%s'>%s</a>\n", v.Data(), n)
 		case gmi.PreformatToggleType:
+			// TODO: add alt text? how does that work in html?
 			if pft {
 				fmt.Fprint(w, "</pre>\n")
 			} else {
@@ -50,17 +51,17 @@ func Contents(p *gmi.Parser, o io.Writer) {
 			}
 			pft = !pft
 		case gmi.PreformatType:
-			fmt.Fprintln(w, v)
+			fmt.Fprintln(w, v.Data())
 		case gmi.HeadingType:
-			fmt.Fprintf(w, "<a href='%s'><h%d>%s</h%[2]d></a>\n", url.QueryEscape(v.String()), v.Level(), v)
+			fmt.Fprintf(w, "<a name='%s'><h%d>%s</h%[2]d></a>\n", url.QueryEscape(v.Data()), v.Level(), v.Data())
 		case gmi.UnorderedListType:
 			if !list {
 				fmt.Fprint(w, "<ul>\n")
 				list = true
 			}
-			fmt.Fprintf(w, "<li>%s</li>\n", v)
+			fmt.Fprintf(w, "<li>%s</li>\n", v.Data())
 		case gmi.QuoteType:
-			fmt.Fprintf(w, "<blockquote>%s</blockquote>\n", v)
+			fmt.Fprintf(w, "<blockquote>%s</blockquote>\n", v.Data())
 		}
 	}
 	w.Flush()

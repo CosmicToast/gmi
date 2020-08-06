@@ -79,7 +79,7 @@ func (p *Parser) calcTOC() {
 // Title is considered to be whatever the first '#' heading is
 func (p *Parser) Title() string {
 	toc := p.TOC(false) // don't force calculation
-	for _, v := toc {
+	for _, v := range toc {
 		if v.HL[0] == 1 { // we can't skip 1 since we calculate it
 			return v.H.Data()
 		}
